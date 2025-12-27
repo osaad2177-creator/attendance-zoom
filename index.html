@@ -58,12 +58,15 @@
       }
 
       header img {
-        width: 56px;
-        height: 56px;
-        border-radius: 16px;
-        object-fit: cover;
+        width: 88px;
+        height: 88px;
+        padding: 0.4rem;
+        border-radius: 18px;
+        object-fit: contain;
         flex-shrink: 0;
+        background: #fff;
         border: 2px solid #e0e7ff;
+        box-shadow: inset 0 0 12px rgba(15, 23, 42, 0.08);
       }
 
       .field {
@@ -255,11 +258,11 @@
       // ⬇⬇⬇ Configuration placeholders (update before deploying) ⬇⬇⬇
       const APPS_SCRIPT_URL =
         "https://script.google.com/macros/s/AKfycbz3XFKiAKYsvSCLJ6oovoaymSw90fGAy_hkmD1JJIV_uEiaSEodN-kf_NrptOpTLvKfKQ/exec"; // Replace with your Google Apps Script Web App URL if different.
-      const OFFICE_LAT = 30.0444; // Replace with office latitude.
-      const OFFICE_LNG = 31.2357; // Replace with office longitude.
+      const OFFICE_LAT = 30.108528; // Replace with office latitude.
+      const OFFICE_LNG = 31.337788; // Replace with office longitude.
       const ALLOWED_DISTANCE = 150; // Replace with allowed distance in meters.
       const COMPANY_LOGO_URL =
-        "https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?auto=format&fit=crop&w=200&q=80"; // Replace with direct company logo URL.
+        "https://raw.githubusercontent.com/osaad2177-creator/Attendance-Zoom/main/assets/logo.svg"; // Replace with direct company logo URL.
       // ⬆⬆⬆ Configuration placeholders (update before deploying) ⬆⬆⬆
 
       const form = document.getElementById("attendanceForm");

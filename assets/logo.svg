@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1600" height="900" viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Zoom Audio Visuals Logo</title>
+  <desc id="desc">Stylized diagonal shapes forming the letters Z with text Zoom Audio Visuals beneath</desc>
+  <rect width="1600" height="900" fill="#002E73"/>
+  <g fill="#fff">
+    <polygon points="0,0 360,0 0,360"/>
+    <polygon points="360,0 720,360 360,360"/>
+    <polygon points="880,0 1240,0 880,360"/>
+    <polygon points="1240,0 1600,360 1240,360"/>
+    <polygon points="0,380 360,380 360,740"/>
+    <polygon points="360,380 720,740 0,740"/>
+    <polygon points="880,380 1240,380 1240,740"/>
+    <polygon points="1240,380 1600,740 880,740"/>
+  </g>
+  <text x="800" y="790" text-anchor="middle" font-family="Montserrat, 'Segoe UI', sans-serif" font-weight="700" font-size="150" fill="#fff">ZOOM</text>
+  <text x="800" y="880" text-anchor="middle" font-family="Montserrat, 'Segoe UI', sans-serif" font-weight="500" font-size="80" fill="#fff">AUDIO VISUALS</text>
+</svg>
+

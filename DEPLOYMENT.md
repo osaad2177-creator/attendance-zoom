@@ -65,9 +65,9 @@ function doGet(e) {
 
 1. Open `index.html` and update the configuration block near the top of the script:
    - `APPS_SCRIPT_URL`: Paste the Web App URL from step 2.
-   - `OFFICE_LAT` & `OFFICE_LNG`: Enter your office coordinates.
+   - `OFFICE_LAT` & `OFFICE_LNG`: Defaults are `30.108528, 31.337788` for testing—replace with your exact coordinates.
    - `ALLOWED_DISTANCE`: Set the maximum radius (in meters).
-   - `COMPANY_LOGO_URL`: Set a direct URL to your company logo image.
+   - `COMPANY_LOGO_URL`: Points to the bundled `assets/logo.svg` hosted on GitHub; replace with any direct logo URL you prefer.
 2. Test locally by opening `index.html` in a browser.  
    Ensure:
    - Location permissions are granted.
