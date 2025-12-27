@@ -67,7 +67,7 @@ function doGet(e) {
    - `APPS_SCRIPT_URL`: Paste the Web App URL from step 2.
    - `OFFICE_LAT` & `OFFICE_LNG`: Defaults are `30.108528, 31.337788` for testing—replace with your exact coordinates.
    - `ALLOWED_DISTANCE`: Set the maximum radius (in meters).
-   - `COMPANY_LOGO_URL`: Defaults to `assets/logo.svg` (served from GitHub Pages); replace with any direct logo URL you prefer.
+   - `COMPANY_LOGO_URL`: Defaults to the absolute GitHub Pages URL for `assets/logo.svg`; replace with any HTTPS-accessible logo you prefer.
 2. Test locally by opening `index.html` in a browser.  
    Ensure:
    - Location permissions are granted.
@@ -106,10 +106,12 @@ function doGet(e) {
   - Re-deploy the script whenever you change the code; otherwise the endpoint may return stale or no responses.
   - Test the Apps Script URL directly in a browser with sample parameters to confirm it responds instantly.
 - **Logo looks distorted or fails to load**
-  - Confirm `assets/logo.svg` exists on the branch served by GitHub Pages (or change `COMPANY_LOGO_URL` to a working HTTPS image).
-  - Keep the image roughly square for the rounded frame; adjust `header img` styles if you choose a different aspect ratio.
+  - Confirm `assets/logo.svg` exists on the branch served by GitHub Pages (or change `COMPANY_LOGO_URL` to another HTTPS-hosted image).
+  - The UI now uses an absolute URL to avoid cache issues; keep replacements square to preserve the curved frame.
 - **Distance display seems incorrect**
   - Double-check `OFFICE_LAT`/`OFFICE_LNG`, and ensure the user grants high-accuracy GPS permission on mobile.
+- **Location request timed out repeatedly**
+  - The app now retries with a lower-accuracy, longer timeout after the first failure. If it still times out, verify the browser has permission to access location on HTTPS and that the device can see Wi-Fi/GPS signals.
 
 That’s it! The system is ready for production use across web and mobile browsers.
 

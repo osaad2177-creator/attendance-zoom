@@ -58,15 +58,16 @@
       }
 
       header img {
-        width: 88px;
-        height: 88px;
-        padding: 0.65rem;
-        border-radius: 24px;
+        width: 96px;
+        height: 96px;
+        padding: 0.8rem;
+        border-radius: 28px;
         object-fit: contain;
         flex-shrink: 0;
         background: #fff;
-        border: 2px solid #e0e7ff;
-        box-shadow: inset 0 0 20px rgba(15, 23, 42, 0.08);
+        border: 2px solid #dbeafe;
+        box-shadow: inset 0 0 25px rgba(15, 23, 42, 0.08),
+          0 0 0 6px rgba(255, 255, 255, 0.8);
       }
 
       .field {
@@ -262,7 +263,17 @@
       const OFFICE_LNG = 31.337788; // Replace with office longitude.
       const ALLOWED_DISTANCE = 150; // Replace with allowed distance in meters.
       const COMPANY_LOGO_URL =
-        "assets/logo.svg"; // Replace with direct company logo URL or hosted asset.
+        "https://osaad2177-creator.github.io/Attendance-Zoom/assets/logo.svg"; // Replace with direct company logo URL or hosted asset.
+      const GEO_PRIMARY_OPTIONS = {
+        enableHighAccuracy: true,
+        timeout: 12000,
+        maximumAge: 0,
+      };
+      const GEO_FALLBACK_OPTIONS = {
+        enableHighAccuracy: false,
+        timeout: 20000,
+        maximumAge: 60000,
+      };
       // ⬆⬆⬆ Configuration placeholders (update before deploying) ⬆⬆⬆
 
       const form = document.getElementById("attendanceForm");
@@ -313,6 +324,27 @@
           }
           button.disabled = isLoading;
         });
+      }
+
+      function getPosition(options) {
+        return new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, options);
+        });
+      }
+
+      async function acquirePosition() {
+        try {
+          return await getPosition(GEO_PRIMARY_OPTIONS);
+        } catch (error) {
+          if (error.code === error.TIMEOUT) {
+            setMessage(
+              "High-accuracy GPS is slow. Trying a faster network fix…",
+              "info"
+            );
+            return getPosition(GEO_FALLBACK_OPTIONS);
+          }
+          throw error;
+        }
       }
 
       function updateMeta({ action = "—", distance = "—" }) {
@@ -369,7 +401,7 @@
         }
       }
 
-      function requestAttendance(attendanceType) {
+      async function requestAttendance(attendanceType) {
         const employeeName = nameInput.value.trim();
         if (!employeeName) {
           setMessage("Please enter your name before proceeding.", "error");
@@ -385,48 +417,42 @@
         toggleLoading(true, attendanceType);
         setMessage("Fetching your location…", "info");
 
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords;
-            const distance = haversineDistance(
-              latitude,
-              longitude,
-              OFFICE_LAT,
-              OFFICE_LNG
-            );
-            updateMeta({ action: `${attendanceType} pending`, distance });
+        try {
+          const position = await acquirePosition();
+          const { latitude, longitude } = position.coords;
+          const distance = haversineDistance(
+            latitude,
+            longitude,
+            OFFICE_LAT,
+            OFFICE_LNG
+          );
 
-            if (distance > ALLOWED_DISTANCE) {
-              toggleLoading(false, attendanceType);
-              setMessage("You are outside the allowed location.", "error");
-              return;
-            }
+          updateMeta({ action: `${attendanceType} pending`, distance });
 
-            sendAttendance({
-              employeeName,
-              attendanceType,
-              latitude,
-              longitude,
-            }).finally(() => toggleLoading(false, attendanceType));
-          },
-          (error) => {
-            toggleLoading(false, attendanceType);
-            if (error.code === error.PERMISSION_DENIED) {
-              setMessage("Please enable location services.", "error");
-            } else if (error.code === error.POSITION_UNAVAILABLE) {
-              setMessage("Location information is unavailable.", "error");
-            } else if (error.code === error.TIMEOUT) {
-              setMessage("Location request timed out. Try again.", "error");
-            } else {
-              setMessage("Unable to fetch location.", "error");
-            }
-          },
-          {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0,
+          if (distance > ALLOWED_DISTANCE) {
+            setMessage("You are outside the allowed location.", "error");
+            return;
           }
-        );
+
+          await sendAttendance({
+            employeeName,
+            attendanceType,
+            latitude,
+            longitude,
+          });
+        } catch (error) {
+          if (error.code === error.PERMISSION_DENIED) {
+            setMessage("Please enable location services.", "error");
+          } else if (error.code === error.POSITION_UNAVAILABLE) {
+            setMessage("Location information is unavailable.", "error");
+          } else if (error.code === error.TIMEOUT) {
+            setMessage("Location request timed out. Try again.", "error");
+          } else {
+            setMessage("Unable to fetch location.", "error");
+          }
+        } finally {
+          toggleLoading(false, attendanceType);
+        }
       }
 
       buttons.forEach((button) => {
