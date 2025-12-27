@@ -67,7 +67,7 @@ function doGet(e) {
    - `APPS_SCRIPT_URL`: Paste the Web App URL from step 2.
    - `OFFICE_LAT` & `OFFICE_LNG`: Defaults are `30.108528, 31.337788` for testing—replace with your exact coordinates.
    - `ALLOWED_DISTANCE`: Set the maximum radius (in meters).
-   - `COMPANY_LOGO_URL`: Points to the bundled `assets/logo.svg` hosted on GitHub; replace with any direct logo URL you prefer.
+   - `COMPANY_LOGO_URL`: Defaults to `assets/logo.svg` (served from GitHub Pages); replace with any direct logo URL you prefer.
 2. Test locally by opening `index.html` in a browser.  
    Ensure:
    - Location permissions are granted.
@@ -95,6 +95,21 @@ function doGet(e) {
 - Re-deploy the Apps Script whenever you edit the backend code.
 - Consider creating filters or pivot tables in the sheet for quick analytics.
 - Regularly verify that geolocation permissions and HTTPS are functioning in modern browsers (Chrome, Edge, Safari, Firefox).
+- The distance indicator displayed below the message area represents the live Haversine distance (in meters) between the employee’s GPS reading and the configured office coordinates; values above `ALLOWED_DISTANCE` will block submissions.
 
-That’s it! The system is ready for production use across web and mobile browsers.*** End Patch
+---
+
+## 6. Troubleshooting tips
+
+- **“Request timed out. Please try again.”**
+  - Ensure the Apps Script deployment access is set to “Anyone” and that the URL pasted into `APPS_SCRIPT_URL` ends with `/exec`.
+  - Re-deploy the script whenever you change the code; otherwise the endpoint may return stale or no responses.
+  - Test the Apps Script URL directly in a browser with sample parameters to confirm it responds instantly.
+- **Logo looks distorted or fails to load**
+  - Confirm `assets/logo.svg` exists on the branch served by GitHub Pages (or change `COMPANY_LOGO_URL` to a working HTTPS image).
+  - Keep the image roughly square for the rounded frame; adjust `header img` styles if you choose a different aspect ratio.
+- **Distance display seems incorrect**
+  - Double-check `OFFICE_LAT`/`OFFICE_LNG`, and ensure the user grants high-accuracy GPS permission on mobile.
+
+That’s it! The system is ready for production use across web and mobile browsers.
 
