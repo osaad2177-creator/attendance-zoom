@@ -24,7 +24,7 @@ Follow the steps below to deploy the attendance system with a Google Apps Script
 2. Replace the default code with the script below and update `SPREADSHEET_ID` and `SHEET_NAME`:
 
 ```javascript
-const SPREADSHEET_ID = 'PUT_SPREADSHEET_ID_HERE';
+const SPREADSHEET_ID = '1dLO94p2n8wvRug_AhpoDPlBsvTiHSjkYozSN4TBtB8s';
 const SHEET_NAME = 'Logs'; // Must match the worksheet created earlier.
 
 function doGet(e) {
