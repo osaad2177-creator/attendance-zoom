@@ -1,157 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Attendance System</title>
+<style>
+  body {
+    margin:0; font-family:sans-serif; display:flex; justify-content:center; align-items:center; height:100vh; background:#f0f4f8;
+  }
+  .card { background:#fff; padding:2rem; border-radius:1rem; box-shadow:0 0 15px rgba(0,0,0,0.1); width:350px; }
+  .field { margin-bottom:1rem; }
+  input { width:100%; padding:0.7rem; border-radius:0.5rem; border:1px solid #ccc; }
+  button { width:48%; padding:0.7rem; border:none; border-radius:0.5rem; cursor:pointer; margin-right:2%; }
+  .check-in { background:#2563eb; color:#fff; }
+  .check-out { background:#f1f5f9; color:#2563eb; }
+  .message { margin-top:1rem; display:none; padding:0.5rem; border-radius:0.5rem; }
+  .success { background:#d1fae5; color:#15803d; }
+  .error { background:#fee2e2; color:#b91c1c; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h2>Attendance System</h2>
+  <div class="field">
+    <input type="text" id="employeeName" placeholder="Enter full name" />
+  </div>
+  <div class="field" style="display:flex; justify-content:space-between;">
+    <button class="check-in">✅ Check In</button>
+    <button class="check-out">❌ Check Out</button>
+  </div>
+  <div class="message" id="statusMessage"></div>
+</div>
+
 <script>
-  // ================= CONFIG =================
-  const APPS_SCRIPT_URL =
-    "https://script.google.com/macros/s/AKfycbyNeWICu6QjixISJvqmCrjWgatbigewzKcCRXz4fSCL2X9RuibOaIAspLbmGy01LzZU-w/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyNeWICu6QjixISJvqmCrjWgatbigewzKcCRXz4fSCL2X9RuibOaIAspLbmGy01LzZU-w/exec";
+const nameInput = document.getElementById("employeeName");
+const statusMessage = document.getElementById("statusMessage");
 
-  const OFFICE_LAT = 30.106784;
-  const OFFICE_LNG = 31.367856;
-  const ALLOWED_DISTANCE = 1000;
+function setMessage(msg, type="success"){
+  statusMessage.textContent = msg;
+  statusMessage.className = `message ${type}`;
+  statusMessage.style.display = "block";
+}
 
-  const LOCATION_CHECK_ENABLED = true;
+async function sendAttendance(type){
+  const name = nameInput.value.trim();
+  if(!name){ setMessage("Please enter your name","error"); return; }
 
-  // ✅ iOS-friendly options
-  const GEO_PRIMARY_OPTIONS = {
-    enableHighAccuracy: true,
-    timeout: 20000,
-    maximumAge: 0, // مهم جدًا لـ iOS
-  };
-
-  const GEO_FALLBACK_OPTIONS = {
-    enableHighAccuracy: false,
-    timeout: 30000,
-    maximumAge: 0,
-  };
-  // ==========================================
-
-  const nameInput = document.getElementById("employeeName");
-  const statusMessage = document.getElementById("statusMessage");
-  const distanceInfo = document.getElementById("distanceInfo");
-  const lastAction = document.getElementById("lastAction");
-  const buttons = document.querySelectorAll("button[data-type]");
-
-  const toRad = (deg) => (deg * Math.PI) / 180;
-
-  function haversineDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371e3;
-    const dLat = toRad(lat2 - lat1);
-    const dLon = toRad(lon2 - lon1);
-
-    const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos(toRad(lat1)) *
-        Math.cos(toRad(lat2)) *
-        Math.sin(dLon / 2) ** 2;
-
-    return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
-  }
-
-  function setMessage(msg, type = "info") {
-    statusMessage.className = `message message-${type}`;
-    statusMessage.style.display = "flex";
-    statusMessage.innerHTML = `<span>${
-      type === "success" ? "✅" : type === "error" ? "❌" : "ℹ️"
-    }</span><p>${msg}</p>`;
-  }
-
-  function toggleLoading(state, label) {
-    buttons.forEach((btn) => {
-      btn.disabled = state;
-      if (state && btn.dataset.type === label) {
-        btn.dataset.old = btn.innerHTML;
-        btn.innerHTML = "⏳ Recording...";
-      } else if (!state && btn.dataset.old) {
-        btn.innerHTML = btn.dataset.old;
-      }
-    });
-  }
-
-  function getPosition(options) {
-    return new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject, options);
-    });
-  }
-
-  async function acquirePositionIOSSafe() {
-    try {
-      const pos = await getPosition(GEO_PRIMARY_OPTIONS);
-
-      // ✅ فلترة accuracy (مهم لـ iOS)
-      if (pos.coords.accuracy && pos.coords.accuracy > 500) {
-        throw new Error("LOW_ACCURACY");
-      }
-
-      return pos;
-    } catch {
-      return await getPosition(GEO_FALLBACK_OPTIONS);
-    }
-  }
-
-  async function sendAttendance({ name, type, lat, lng }) {
+  try{
+    // بدون location → نرسل القيمة الثابتة
     const url = new URL(APPS_SCRIPT_URL);
     url.searchParams.set("employee_name", name);
     url.searchParams.set("attendance_type", type);
-    url.searchParams.set("latitude", lat);
-    url.searchParams.set("longitude", lng);
+    url.searchParams.set("latitude", "0");
+    url.searchParams.set("longitude", "0");
 
-    const res = await fetch(url.toString(), { cache: "no-store" });
+    const res = await fetch(url.toString(), { method:"GET", cache:"no-store" });
     const text = await res.text();
 
-    if (res.ok && text.includes("success")) {
-      setMessage("Attendance recorded successfully", "success");
+    if(res.ok && text.includes("success")){
+      setMessage(`${type} recorded successfully`,"success");
     } else {
-      setMessage(text || "Server error", "error");
+      setMessage("Server error","error");
     }
+  }catch{
+    setMessage("Network error","error");
   }
+}
 
-  async function requestAttendance(type) {
-    const name = nameInput.value.trim();
-    if (!name) {
-      setMessage("Please enter your name", "error");
-      return;
-    }
-
-    toggleLoading(true, type);
-    setMessage("Fetching your location…", "info");
-
-    try {
-      let lat = OFFICE_LAT;
-      let lng = OFFICE_LNG;
-
-      if (LOCATION_CHECK_ENABLED) {
-        const pos = await acquirePositionIOSSafe();
-        lat = pos.coords.latitude;
-        lng = pos.coords.longitude;
-
-        const distance = haversineDistance(
-          lat,
-          lng,
-          OFFICE_LAT,
-          OFFICE_LNG
-        );
-
-        distanceInfo.textContent = `Distance: ${distance.toFixed(1)} m`;
-
-        // ✅ سماحية بسيطة لـ iOS
-        if (distance > ALLOWED_DISTANCE + 200) {
-          setMessage("You are outside the allowed location", "error");
-          return;
-        }
-      }
-
-      await sendAttendance({ name, type, lat, lng });
-
-      lastAction.firstElementChild.textContent =
-        "Last update: " + new Date().toLocaleTimeString();
-    } catch (e) {
-      setMessage("Unable to get location", "error");
-    } finally {
-      toggleLoading(false, type);
-    }
-  }
-
-  buttons.forEach((btn) => {
-    btn.addEventListener("click", () =>
-      requestAttendance(btn.dataset.type)
-    );
-  });
+document.querySelector(".check-in").addEventListener("click", ()=>sendAttendance("Check In"));
+document.querySelector(".check-out").addEventListener("click", ()=>sendAttendance("Check Out"));
 </script>
+
+</body>
+</html>
