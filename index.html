@@ -268,9 +268,9 @@
         "https://osaad2177-creator.github.io/Attendance-Zoom/assets/logo.svg"; // Replace with direct company logo URL or hosted asset.
       const LOCATION_CHECK_ENABLED = true; // Set to true for production geofence; false to bypass location while testing backend.
       const GEO_PRIMARY_OPTIONS = {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 30000,
+        enableHighAccuracy: false,
+        timeout: 30000,
+        maximumAge: 300000,
       };
       const GEO_FALLBACK_OPTIONS = {
         enableHighAccuracy: false,
