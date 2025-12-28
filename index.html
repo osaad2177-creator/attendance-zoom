@@ -1,95 +1,492 @@
 <!DOCTYPE html>
-<html lang="ar">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Attendance System</title>
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      text-align: center;
-      padding: 40px;
-    }
-    .box {
-      background: #fff;
-      padding: 30px;
-      max-width: 400px;
-      margin: auto;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,.1);
-    }
-    input, button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 15px;
-      font-size: 16px;
-    }
-    button {
-      background: #007bff;
-      color: #fff;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:disabled {
-      background: #999;
-    }
-    .msg {
-      margin-top: 20px;
-      font-weight: bold;
-    }
-  </style>
-</head>
-
-<body>
-
-  <div class="box">
-    <h2>تسجيل حضور / انصراف</h2>
-
-    <input type="text" id="name" placeholder="اسم الموظف" />
-
-    <button onclick="submitAttendance()">تسجيل</button>
-
-    <div class="msg" id="message"></div>
-  </div>
-
-  <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyH-2gXvluFKWXvKePZBd3aEoPU7KbNiXQCOYvkhuXAQCa9alX2DC451vPYYCwcV-tHkw/exec";
-
-    async function submitAttendance() {
-      const name = document.getElementById("name").value.trim();
-      const msg = document.getElementById("message");
-
-      if (!name) {
-        msg.innerText = "❌ من فضلك اكتب اسمك";
-        msg.style.color = "red";
-        return;
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Attendance System</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        --bg: #f2f4f7;
+        --card: #ffffff;
+        --primary: #2563eb;
+        --primary-dark: #1e40af;
+        --success: #15803d;
+        --error: #b91c1c;
+        --text: #0f172a;
+        --muted: #64748b;
+        --shadow: 0 20px 65px rgba(15, 23, 42, 0.1);
       }
 
-      msg.innerText = "⏳ جاري التسجيل...";
-      msg.style.color = "black";
+      * {
+        box-sizing: border-box;
+      }
 
-      try {
-        const url = `${SCRIPT_URL}?name=${encodeURIComponent(name)}`;
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: radial-gradient(circle at top, #dbeafe, #eef2ff 45%, var(--bg));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+        color: var(--text);
+      }
 
-        const res = await fetch(url, { cache: "no-store" });
-        const data = await res.json();
+      .card {
+        width: min(460px, 100%);
+        background: var(--card);
+        border-radius: 1.5rem;
+        padding: 2rem;
+        box-shadow: var(--shadow);
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
 
-        if (data.status === "success") {
-          msg.innerText = "✅ تم التسجيل بنجاح";
-          msg.style.color = "green";
-        } else {
-          msg.innerText = "❌ " + data.message;
-          msg.style.color = "red";
+      header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+        text-align: center;
+      }
+
+      header h1 {
+        margin: 0;
+        font-size: 1.65rem;
+      }
+
+      header img {
+        width: 104px;
+        height: 104px;
+        padding: 0.9rem;
+        border-radius: 30px;
+        object-fit: contain;
+        flex-shrink: 0;
+        background: #fff;
+        border: 2px solid rgba(59, 130, 246, 0.2);
+        box-shadow: inset 0 0 25px rgba(15, 23, 42, 0.08),
+          0 0 0 8px rgba(255, 255, 255, 0.9);
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      label {
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+
+      input {
+        padding: 0.9rem 1rem;
+        border-radius: 0.95rem;
+        border: 1.5px solid #cbd5f5;
+        font-size: 1rem;
+        transition: border 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+      }
+
+      .button-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 0.75rem;
+      }
+
+      button {
+        padding: 0.95rem 1.25rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 0.95rem;
+        cursor: pointer;
+        transition: transform 0.1s ease, box-shadow 0.2s ease,
+          background 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+      }
+
+      button:active {
+        transform: scale(0.98);
+      }
+
+      .check-in {
+        background: var(--primary);
+        color: #fff;
+        box-shadow: 0 10px 30px rgba(37, 99, 235, 0.2);
+      }
+
+      .check-in:disabled,
+      .check-out:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+
+      .check-in:hover:not(:disabled) {
+        background: var(--primary-dark);
+      }
+
+      .check-out {
+        background: #f1f5f9;
+        color: var(--primary-dark);
+        box-shadow: inset 0 0 0 2px rgba(37, 99, 235, 0.15);
+      }
+
+      .message {
+        border-radius: 0.95rem;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        display: none;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .message span {
+        font-weight: 600;
+      }
+
+      .message-success {
+        display: flex;
+        background: rgba(21, 128, 61, 0.08);
+        color: var(--success);
+      }
+
+      .message-error {
+        display: flex;
+        background: rgba(185, 28, 28, 0.08);
+        color: var(--error);
+      }
+
+      .message-info {
+        display: flex;
+        background: #e0f2fe;
+        color: #0369a1;
+      }
+
+      .meta {
+        font-size: 0.85rem;
+        color: var(--muted);
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+      }
+
+      footer {
+        text-align: center;
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+
+      @media (max-width: 480px) {
+        body {
+          padding: 1rem;
         }
-      } catch (err) {
-        msg.innerText = "❌ حصل خطأ في الاتصال";
-        msg.style.color = "red";
-      }
-    }
-  </script>
 
-</body>
+        .card {
+          padding: 1.5rem;
+        }
+
+        header h1 {
+          font-size: 1.25rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <header>
+        <img
+          id="companyLogo"
+          src="https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?auto=format&fit=crop&w=200&q=80"
+          alt="Company logo"
+        />
+        <div>
+          <h1>Attendance System</h1>
+          <p class="meta" style="justify-content: center">
+            Fast, secure check-ins with live location validation.
+          </p>
+        </div>
+      </header>
+
+      <form id="attendanceForm" novalidate>
+        <div class="field">
+          <label for="employeeName">Employee Name</label>
+          <input
+            id="employeeName"
+            name="employee_name"
+            type="text"
+            placeholder="Enter full name"
+            autocomplete="name"
+            required
+          />
+        </div>
+
+        <div class="button-grid">
+          <button type="button" class="check-in" data-type="Check In">
+            ✅ Check In
+          </button>
+          <button type="button" class="check-out" data-type="Check Out">
+            ❌ Check Out
+          </button>
+        </div>
+      </form>
+
+      <div id="statusMessage" class="message message-info">
+        <span>ℹ️</span>
+        <p>Allow location access to record attendance.</p>
+      </div>
+
+      <div class="meta" id="lastAction">
+        <span>Last update: —</span>
+        <span id="distanceInfo">Distance: —</span>
+      </div>
+
+      <footer>Powered by Google Sheets & Apps Script</footer>
+    </main>
+
+    <script>
+      // ⬇⬇⬇ Configuration placeholders (update before deploying) ⬇⬇⬇
+      const APPS_SCRIPT_URL =
+        "https://script.google.com/macros/s/AKfycbyGtyyjXMNVfNB6Q7af8ER3QasfaEt0cUYI_rbGyVOgl4pmG-9apagkXillMAQ0jD37hw/exec"; // Replace with your Google Apps Script Web App URL if different.
+      const OFFICE_LAT = 30.108528; // Replace with office latitude.
+      const OFFICE_LNG = 31.337788; // Replace with office longitude.
+      const ALLOWED_DISTANCE = 1000; // Replace with allowed distance in meters.
+      const COMPANY_LOGO_URL =
+        "https://osaad2177-creator.github.io/Attendance-Zoom/assets/logo.svg"; // Replace with direct company logo URL or hosted asset.
+      const LOCATION_CHECK_ENABLED = true; // Set to true for production geofence; false to bypass location while testing backend.
+      const GEO_PRIMARY_OPTIONS = {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 30000,
+      };
+      const GEO_FALLBACK_OPTIONS = {
+        enableHighAccuracy: false,
+        timeout: 25000,
+        maximumAge: 60000,
+      };
+      // ⬆⬆⬆ Configuration placeholders (update before deploying) ⬆⬆⬆
+
+      const form = document.getElementById("attendanceForm");
+      const nameInput = document.getElementById("employeeName");
+      const statusMessage = document.getElementById("statusMessage");
+      const distanceInfo = document.getElementById("distanceInfo");
+      const lastAction = document.getElementById("lastAction");
+      const buttons = form.querySelectorAll("button[data-type]");
+      const companyLogo = document.getElementById("companyLogo");
+
+      companyLogo.src = COMPANY_LOGO_URL;
+      companyLogo.addEventListener("error", () => {
+        companyLogo.src =
+          "https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?auto=format&fit=crop&w=200&q=80";
+      });
+
+      const toRadians = (deg) => (deg * Math.PI) / 180;
+
+      function haversineDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371e3; // meters
+        const φ1 = toRadians(lat1);
+        const φ2 = toRadians(lat2);
+        const Δφ = toRadians(lat2 - lat1);
+        const Δλ = toRadians(lon2 - lon1);
+
+        const a =
+          Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+          Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+      }
+
+      function setMessage(content, type = "info") {
+        statusMessage.className = `message message-${type}`;
+        statusMessage.style.display = "flex";
+        statusMessage.innerHTML = `<span>${
+          type === "success" ? "✅" : type === "error" ? "❌" : "ℹ️"
+        }</span><p>${content}</p>`;
+      }
+
+      function toggleLoading(isLoading, label) {
+        buttons.forEach((button) => {
+          if (isLoading && button.dataset.type === label) {
+            button.dataset.originalText = button.innerHTML;
+            button.innerHTML = "⏳ Recording...";
+          } else if (!isLoading && button.dataset.type === label) {
+            button.innerHTML = button.dataset.originalText || button.innerHTML;
+          }
+          button.disabled = isLoading;
+        });
+      }
+
+      function getPosition(options) {
+        return new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, options);
+        });
+      }
+
+      async function acquirePosition() {
+        try {
+          return await getPosition(GEO_PRIMARY_OPTIONS);
+        } catch (error) {
+          if (error.code === error.TIMEOUT || error.code === error.POSITION_UNAVAILABLE) {
+            setMessage(
+              "High-accuracy GPS is slow or unavailable. Trying a faster network fix…",
+              "info"
+            );
+            return getPosition(GEO_FALLBACK_OPTIONS);
+          }
+          throw error;
+        }
+      }
+
+      function updateMeta({ action = "—", distance = "—" }) {
+        lastAction.firstElementChild.textContent = `Last update: ${action}`;
+        distanceInfo.textContent =
+          typeof distance === "number"
+            ? `Distance: ${distance.toFixed(1)} m`
+            : `Distance: ${distance}`;
+      }
+
+      async function sendAttendance({
+        employeeName,
+        attendanceType,
+        latitude,
+        longitude,
+      }) {
+        const controller = new AbortController();
+        const timeoutId = window.setTimeout(() => controller.abort(), 12000);
+
+        try {
+          const url = new URL(APPS_SCRIPT_URL);
+          url.searchParams.set("employee_name", employeeName);
+          url.searchParams.set("attendance_type", attendanceType);
+          url.searchParams.set("latitude", latitude.toString());
+          url.searchParams.set("longitude", longitude.toString());
+
+          const response = await fetch(url.toString(), {
+            method: "GET",
+            cache: "no-store",
+            signal: controller.signal,
+          });
+
+          const text = (await response.text()).trim();
+
+          if (response.ok && text.includes("Attendance recorded successfully")) {
+            setMessage("Attendance recorded successfully.", "success");
+            updateMeta({
+              action: `${attendanceType} just now`,
+              distance: haversineDistance(latitude, longitude, OFFICE_LAT, OFFICE_LNG),
+            });
+          } else if (text.includes("Missing required data")) {
+            setMessage("Missing required data.", "error");
+          } else {
+            setMessage(text || "Unexpected response from server.", "error");
+          }
+        } catch (error) {
+          if (error.name === "AbortError") {
+            setMessage("Request timed out. Please try again.", "error");
+          } else {
+            setMessage("Network error. Please retry.", "error");
+          }
+        } finally {
+          window.clearTimeout(timeoutId);
+        }
+      }
+
+      async function requestAttendance(attendanceType) {
+        const employeeName = nameInput.value.trim();
+        if (!employeeName) {
+          setMessage("Please enter your name before proceeding.", "error");
+          nameInput.focus();
+          return;
+        }
+
+        if (LOCATION_CHECK_ENABLED && !navigator.geolocation) {
+          setMessage("Geolocation is not supported in this browser.", "error");
+          return;
+        }
+
+        toggleLoading(true, attendanceType);
+        setMessage(
+          LOCATION_CHECK_ENABLED
+            ? "Fetching your location…"
+            : "Location bypass active for testing. Using office coordinates.",
+          "info"
+        );
+
+        try {
+          let latitude = OFFICE_LAT;
+          let longitude = OFFICE_LNG;
+          let distance = 0;
+
+          if (LOCATION_CHECK_ENABLED) {
+            const position = await acquirePosition();
+            ({ latitude, longitude } = position.coords);
+            distance = haversineDistance(
+              latitude,
+              longitude,
+              OFFICE_LAT,
+              OFFICE_LNG
+            );
+          }
+
+          updateMeta({
+            action: `${attendanceType} pending`,
+            distance,
+          });
+
+          if (LOCATION_CHECK_ENABLED && distance > ALLOWED_DISTANCE) {
+            setMessage("You are outside the allowed location.", "error");
+            return;
+          }
+
+          await sendAttendance({
+            employeeName,
+            attendanceType,
+            latitude,
+            longitude,
+          });
+        } catch (error) {
+          if (error.code === error.PERMISSION_DENIED) {
+            setMessage(
+              "Please enable location services (allow precise location in browser settings).",
+              "error"
+            );
+          } else if (error.code === error.POSITION_UNAVAILABLE) {
+            setMessage(
+              "Location information is unavailable. Check that location is allowed and retry.",
+              "error"
+            );
+          } else if (error.code === error.TIMEOUT) {
+            setMessage("Location request timed out. Try again.", "error");
+          } else {
+            setMessage("Unable to fetch location.", "error");
+          }
+        } finally {
+          toggleLoading(false, attendanceType);
+        }
+      }
+
+      buttons.forEach((button) => {
+        button.addEventListener("click", () =>
+          requestAttendance(button.dataset.type)
+        );
+      });
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+      });
+    </script>
+  </body>
 </html>
